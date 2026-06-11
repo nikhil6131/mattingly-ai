@@ -14,31 +14,30 @@ exports.handler = async (event) => {
   try {
     const { messages } = JSON.parse(event.body);
 
-    const SYSTEM_PROMPT = `You are an expert warehouse analytics AI assistant for Mattingly Hackathon 2026. 
+    const SYSTEM_PROMPT = `You are an expert warehouse analytics AI assistant for Mattingly Hackathon 2026.
 Total Revenue: $7,216,893.77. Net Profit: $4,646,881.27. Net Margin: 64.39%.
 Critical customers: Bravo FMCG (17.28%), Charlie Medical (28.37%), Delta Manufacturing (27.84%).
 Star customers: Echo Imports (84.57%), Alpha Retail (79.27%).
 At Risk Revenue: $417,935. Cost Leakage: $1.34M. Total Orders: 3,055,341.
 Be concise, cite exact numbers, give actionable insights.`;
 
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer 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`
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'llama3-70b-8192',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1000,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          ...messages
-        ]
+        system: SYSTEM_PROMPT,
+        messages: messages
       })
     });
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || 'No response received.';
+    const reply = data.content?.[0]?.text || 'No response received.';
 
     return {
       statusCode: 200,
