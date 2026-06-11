@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mattingly AI Assistant</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --navy: #1E3A5F;
+    --green: #2ECC71;
+    --green-dark: #27AE60;
+    --red: #E74C3C;
+    --gold: #F39C12;
+    --bg: #F0F4F8;
+    --white: #FFFFFF;
+    --text: #1a2332;
+    --muted: #6B7A8D;
+    --border: #D1DCE8;
+    --card-bg: #FFFFFF;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Header */
+  .header {
+    background: var(--navy);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .header-logo {
+    width: 36px;
+    height: 36px;
+    background: var(--green);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    font-size: 14px;
+  }
+
+  .header-info h1 {
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .header-info p {
+    color: rgba(255,255,255,0.6);
+    font-size: 11px;
+  }
+
+  .header-badge {
+    margin-left: auto;
+    background: rgba(46,204,113,0.2);
+    border: 1px solid var(--green);
+    color: var(--green);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  /* KPI Strip */
+  .kpi-strip {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    gap: 24px;
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+
+  .kpi-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    white-space: nowrap;
+  }
+
+  .kpi-label {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .kpi-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  .kpi-value.green { color: var(--green-dark); }
+  .kpi-value.red { color: var(--red); }
+  .kpi-value.gold { color: var(--gold); }
+
+  /* Main Layout */
+  .main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* Suggestions Panel */
+  .suggestions-panel {
+    width: 220px;
+    background: white;
+    border-right: 1px solid var(--border);
+    padding: 16px 12px;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+
+  .suggestions-panel h3 {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  .suggestion-group {
+    margin-bottom: 16px;
+  }
+
+  .suggestion-group-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 6px;
+    padding-left: 4px;
+  }
+
+  .suggestion-btn {
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 11px;
+    cursor: pointer;
+    margin-bottom: 4px;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+
+  .suggestion-btn:hover {
+    background: var(--navy);
+    color: white;
+    border-color: var(--navy);
+  }
+
+  /* Chat Area */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Welcome */
+  .welcome {
+    text-align: center;
+    padding: 30px 20px;
+  }
+
+  .welcome-icon {
+    width: 56px;
+    height: 56px;
+    background: linear-gradient(135deg, var(--navy), #2980b9);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 16px;
+  }
+
+  .welcome h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+
+  .welcome p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  /* Messages */
+  .message {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .message.user {
+    flex-direction: row-reverse;
+  }
+
+  .message-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .message.assistant .message-avatar {
+    background: var(--navy);
+    color: white;
+  }
+
+  .message.user .message-avatar {
+    background: var(--green);
+    color: white;
+  }
+
+  .message-bubble {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .message.assistant .message-bubble {
+    background: white;
+    border: 1px solid var(--border);
+    border-top-left-radius: 4px;
+    color: var(--text);
+  }
+
+  .message.user .message-bubble {
+    background: var(--navy);
+    color: white;
+    border-top-right-radius: 4px;
+  }
+
+  /* Data cards inside messages */
+  .data-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+  }
+
+  .data-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+
+  .data-card-row:last-child { border-bottom: none; }
+
+  .data-card-row .label { color: var(--muted); }
+  .data-card-row .value { font-weight: 600; color: var(--navy); }
+  .data-card-row .value.critical { color: var(--red); }
+  .data-card-row .value.star { color: var(--gold); }
+  .data-card-row .value.healthy { color: var(--green-dark); }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 14px 16px;
+  }
+
+  .typing-dot {
+    width: 7px;
+    height: 7px;
+    background: var(--muted);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-6px); }
+  }
+
+  /* Input Area */
+  .input-area {
+    padding: 16px 20px;
+    background: white;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .input-box {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: border-color 0.2s;
+    background: var(--bg);
+  }
+
+  .input-box:focus {
+    border-color: var(--navy);
+    background: white;
+  }
+
+  .send-btn {
+    width: 44px;
+    height: 44px;
+    background: var(--navy);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover { background: #2980b9; }
+  .send-btn:disabled { background: var(--border); cursor: not-allowed; }
+
+  .send-btn svg { width: 18px; height: 18px; fill: white; }
+
+  .input-hint {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+    text-align: center;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">M</div>
+  <div class="header-info">
+    <h1>Mattingly AI Assistant</h1>
+    <p>Warehouse Analytics · Hackathon 2026</p>
+  </div>
+  <div class="header-badge">● Live</div>
+</div>
+
+<div class="kpi-strip">
+  <div class="kpi-item">
+    <span class="kpi-label">Total Revenue</span>
+    <span class="kpi-value">$7.22M</span>
+  </div>
+  <div class="kpi-item">
+    <span class="kpi-label">Net Profit</span>
+    <span class="kpi-value green">$4.65M</span>
+  </div>
+  <div class="kpi-item">
+    <span class="kpi-label">Net Margin</span>
+    <span class="kpi-value green">64.39%</span>
+  </div>
+  <div class="kpi-item">
+    <span class="kpi-label">At Risk Revenue</span>
+    <span class="kpi-value red">$417.9K</span>
+  </div>
+  <div class="kpi-item">
+    <span class="kpi-label">Cost Leakage</span>
+    <span class="kpi-value red">$1.34M</span>
+  </div>
+  <div class="kpi-item">
+    <span class="kpi-label">Critical Customers</span>
+    <span class="kpi-value red">3</span>
+  </div>
+  <div class="kpi-item">
+    <span class="kpi-label">Star Customers</span>
+    <span class="kpi-value gold">2</span>
+  </div>
+  <div class="kpi-item">
+    <span class="kpi-label">Total Orders</span>
+    <span class="kpi-value">3.05M</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="suggestions-panel">
+    <h3>Quick Questions</h3>
+
+    <div class="suggestion-group">
+      <div class="suggestion-group-label">💰 Profitability</div>
+      <button class="suggestion-btn" onclick="askQuestion('What is the total revenue and net profit?')">Total revenue & profit?</button>
+      <button class="suggestion-btn" onclick="askQuestion('Which customers are Critical and why?')">Who are Critical customers?</button>
+      <button class="suggestion-btn" onclick="askQuestion('Which customer has the highest margin?')">Highest margin customer?</button>
+      <button class="suggestion-btn" onclick="askQuestion('What is the net margin percentage?')">Net margin %?</button>
+    </div>
+
+    <div class="suggestion-group">
+      <div class="suggestion-group-label">⚠️ Risk & Leakage</div>
+      <button class="suggestion-btn" onclick="askQuestion('What is the revenue leakage and what is causing it?')">What is causing leakage?</button>
+      <button class="suggestion-btn" onclick="askQuestion('Which customers are at risk and how much revenue is at risk?')">At risk customers?</button>
+      <button class="suggestion-btn" onclick="askQuestion('What are the main exception types driving leakage?')">Exception types?</button>
+    </div>
+
+    <div class="suggestion-group">
+      <div class="suggestion-group-label">⚙️ Operations</div>
+      <button class="suggestion-btn" onclick="askQuestion('What are the total orders and units processed?')">Orders & units?</button>
+      <button class="suggestion-btn" onclick="askQuestion('Which activity type has the most labour hours?')">Top labour activity?</button>
+      <button class="suggestion-btn" onclick="askQuestion('Compare M1 and M2 warehouse performance')">M1 vs M2 comparison?</button>
+    </div>
+
+    <div class="suggestion-group">
+      <div class="suggestion-group-label">📋 Summary</div>
+      <button class="suggestion-btn" onclick="askQuestion('Give me a full executive summary of the warehouse performance')">Executive summary</button>
+      <button class="suggestion-btn" onclick="askQuestion('What are the top 3 recommendations to improve profitability?')">Top recommendations</button>
+    </div>
+  </div>
+
+  <div class="chat-area">
+    <div class="messages" id="messages">
+      <div class="welcome">
+        <div class="welcome-icon">🤖</div>
+        <h2>Mattingly Warehouse AI</h2>
+        <p>Ask me anything about your warehouse data — revenue, profitability, customer risk, operational performance, or strategic recommendations.</p>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <div class="input-row">
+        <input 
+          type="text" 
+          class="input-box" 
+          id="userInput" 
+          placeholder="Ask about revenue, customers, operations..."
+          onkeydown="if(event.key==='Enter') sendMessage()"
+        />
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">Powered by Claude AI · Mattingly Hackathon 2026</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `You are an expert warehouse analytics AI assistant for Mattingly, built for the Mattingly Hackathon 2026. You have deep knowledge of the warehouse dataset and provide sharp, data-driven insights.
+
+EXACT DATA YOU KNOW:
+- Total Revenue: $7,216,893.77 (M1: $3,553,039.92 + M2: $3,663,853.85)
+- Net Profit: $4,646,881.27
+- Net Margin %: 64.39%
+- Total Labour Cost: $2,014,512.50 (M1: $1,049,158.62 + M2: $965,353.88)
+- Fixed Costs (Cost Allocation): $290,500
+- Management Allocated Cost: $265,000
+- Total Cost Leakage: ~$1.34M
+- At Risk Revenue: $417,935.50
+- Exception Revenue Impact: $248,695
+- Total Orders/Units Processed: 3,055,341 (M1: 1,498,436 + M2: 1,556,905)
+- Avg Labour Hours: ~104
+
+CUSTOMER DATA:
+- C001 Alpha Retail: Revenue $452,823.90, Margin 79.27%, Flag: STAR
+- C002 Bravo FMCG: Revenue $371,652.15, Margin 17.28%, Flag: CRITICAL — At Risk $169,240.47
+- C003 Charlie Medical: Revenue $208,761.74, Margin 28.37%, Flag: CRITICAL — At Risk $94,658.92, Exception Impact $94,658.92
+- C004 Delta Manufacturing: Revenue $303,505.78, Margin 27.84%, Flag: CRITICAL — At Risk $154,036.11, Exception Impact $154,036.11
+- C005 Echo Imports: Revenue $891,717.64, Margin 84.57%, Flag: STAR
+- Other customers: Healthy flag, margins 60-70%
+
+EXCEPTION DATA:
+- Total Exceptions: 37,496
+- Exception Types: Possible Unrecovered Activities (dominant ~37K), Rework, Urgent Order
+- Only Delta Manufacturing and Charlie Medical have exception revenue impact
+- Bravo FMCG at risk from margin pressure alone (no exceptions)
+
+LABOUR HOURS BY ACTIVITY:
+- Dispatch: 14,068 hrs (highest)
+- Pick: 12,157 hrs
+- Receipt: 5,238 hrs
+- Rework: 4,635 hrs
+- Returns: 4,606 hrs
+- Urgent Order: 2,175 hrs
+- Storage: 347 hrs (lowest)
+
+COST BREAKDOWN:
+- Rent: $104K (2 months)
+- Warehouse Management: $68K
+- Corporate Overhead: $56K
+- Equipment: $37K
+- Utilities: $25K
+
+WAREHOUSE STRUCTURE:
+- M1 = Warehouse 1 (Month 1 data)
+- M2 = Warehouse 2 (Month 2 data)
+- Both warehouses have: Revenue, Labour, Activities, Exceptions, Inventory tables
+- M2 slightly higher revenue than M1
+
+KEY INSIGHTS:
+- 3 Critical customers (Bravo, Charlie, Delta) represent 100% of at risk revenue
+- Echo Imports is most profitable customer (84.57% margin, $891K revenue)
+- Charlie Medical and Delta Manufacturing have BOTH margin risk AND exception risk (double risk)
+- Dispatch and Pick dominate labour hours = core warehouse operations running well
+- Rework hours (4,635) suggest quality issues worth monitoring
+- Cost Allocation has no Customer ID = fixed costs spread across all customers
+
+RESPONSE STYLE:
+- Be concise, sharp, and data-specific
+- Always cite exact numbers
+- Use bullet points for lists
+- Flag risks clearly
+- Give actionable recommendations
+- Keep responses under 200 words unless asked for full summary
+- Format numbers with $ and commas`;
+
+let conversationHistory = [];
+let isLoading = false;
+
+function askQuestion(question) {
+  document.getElementById('userInput').value = question;
+  sendMessage();
+}
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const question = input.value.trim();
+  if (!question || isLoading) return;
+
+  input.value = '';
+  addMessage('user', question);
+  conversationHistory.push({ role: 'user', content: question });
+
+  setLoading(true);
+  addTypingIndicator();
+
+  try {
+    const response = await fetch('/.netlify/functions/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: conversationHistory })
+    });
+
+    const data = await response.json();
+    removeTypingIndicator();
+
+    const reply = data.reply || 'Sorry, I could not get a response.';
+    conversationHistory.push({ role: 'assistant', content: reply });
+    addMessage('assistant', reply);
+
+  } catch (err) {
+    removeTypingIndicator();
+    addMessage('assistant', 'Connection error. Please try again.');
+  }
+
+  setLoading(false);
+}
+
+function addMessage(role, text) {
+  const messages = document.getElementById('messages');
+  
+  // Remove welcome if exists
+  const welcome = messages.querySelector('.welcome');
+  if (welcome) welcome.remove();
+
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'message-avatar';
+  avatar.textContent = role === 'assistant' ? 'AI' : 'N';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'message-bubble';
+  bubble.innerHTML = formatMessage(text);
+
+  div.appendChild(avatar);
+  div.appendChild(bubble);
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function formatMessage(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^- (.*)/gm, '• $1')
+    .replace(/\n/g, '<br>');
+}
+
+function addTypingIndicator() {
+  const messages = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'message assistant';
+  div.id = 'typing-indicator';
+  div.innerHTML = `
+    <div class="message-avatar">AI</div>
+    <div class="message-bubble">
+      <div class="typing">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    </div>`;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  const indicator = document.getElementById('typing-indicator');
+  if (indicator) indicator.remove();
+}
+
+function setLoading(state) {
+  isLoading = state;
+  document.getElementById('sendBtn').disabled = state;
+}
+</script>
+</body>
+</html>
