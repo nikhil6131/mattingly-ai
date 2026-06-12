@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mattingly Action Centre</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', sans-serif; background: #F5F6F0; color: #2c2c2c; }
+
+  .header { background: #1a2a3a; padding: 10px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 30px; height: 30px; background: #4A5E23; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 13px; }
+  .header-title { color: white; font-size: 13px; font-weight: 600; }
+  .header-sub { color: #8a9bb0; font-size: 10px; }
+  .live-badge { background: #4A5E23; color: white; font-size: 10px; padding: 3px 8px; border-radius: 20px; }
+
+  .stats-bar { background: #1e3a5f; padding: 7px 20px; display: flex; gap: 20px; flex-wrap: wrap; }
+  .stat { display: flex; flex-direction: column; }
+  .stat-label { color: #8a9bb0; font-size: 9px; text-transform: uppercase; }
+  .stat-value { color: white; font-size: 11px; font-weight: 600; }
+  .stat-value.red { color: #e74c3c; }
+  .stat-value.green { color: #6B8C2A; }
+
+  .content { display: flex; gap: 0; }
+
+  .left-panel { width: 200px; min-width: 200px; background: white; border-right: 1px solid #e0e0e0; padding: 12px 10px; }
+  .panel-title { font-size: 9px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 600; }
+
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px; }
+  .kpi-card { background: #F5F6F0; border: 1px solid #d0ddb8; border-radius: 6px; padding: 8px; }
+  .kpi-label { font-size: 9px; color: #666; margin-bottom: 2px; }
+  .kpi-value { font-size: 16px; font-weight: 700; color: #4A5E23; }
+  .kpi-value.red { color: #c0392b; }
+  .kpi-value.amber { color: #BA7517; }
+
+  .btn-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+  .btn { width: 100%; text-align: left; border: none; border-radius: 6px; padding: 8px 10px; font-size: 11px; cursor: pointer; transition: all 0.2s; font-weight: 600; line-height: 1.3; }
+  .btn.primary { background: #4A5E23; color: white; }
+  .btn.primary:hover { background: #6B8C2A; }
+  .btn.danger { background: #fdf0ee; color: #c0392b; border: 1px solid #f5c4b3; }
+  .btn.danger:hover { background: #fae0db; }
+  .btn.secondary { background: #f0f4e8; color: #4A5E23; border: 1px solid #d0ddb8; }
+  .btn.secondary:hover { background: #e0eacc; }
+  .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .right-panel { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+
+  .table-section { background: white; border-radius: 8px; border: 1px solid #e0e0e0; overflow: hidden; }
+  .section-header { background: #4A5E23; color: white; padding: 8px 12px; font-size: 12px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { padding: 8px 10px; text-align: left; background: #f5f9ef; color: #4A5E23; font-weight: 600; border-bottom: 1px solid #d0ddb8; }
+  td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; color: #333; vertical-align: top; line-height: 1.4; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f9fbf5; }
+
+  .badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; display: inline-block; }
+  .badge.high { background: #F5C4B3; color: #712B13; }
+  .badge.medium { background: #FAC775; color: #633806; }
+  .badge.opportunity { background: #C0DD97; color: #27500A; }
+
+  .ai-section { background: white; border: 1px solid #6B8C2A; border-radius: 8px; overflow: hidden; }
+  .ai-header { background: #4A5E23; color: white; padding: 8px 12px; font-size: 12px; font-weight: 600; }
+  .ai-body { padding: 12px; }
+  .ai-placeholder { color: #aaa; font-size: 12px; font-style: italic; text-align: center; padding: 16px 0; }
+  .ai-content { font-size: 12px; line-height: 1.8; color: #333; white-space: pre-wrap; }
+
+  .loading { display: flex; align-items: center; gap: 8px; color: #4A5E23; font-size: 12px; }
+  .dot { width: 6px; height: 6px; background: #4A5E23; border-radius: 50%; animation: bounce 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+  .findings { background: #F5F6F0; border: 1px solid #6B8C2A; border-radius: 8px; padding: 12px; }
+  .findings-title { color: #4A5E23; font-weight: 700; font-size: 12px; margin-bottom: 8px; }
+  .finding { font-size: 11px; color: #444; line-height: 1.6; margin-bottom: 5px; padding-left: 10px; border-left: 3px solid #4A5E23; }
+
+  .footer { text-align: center; font-size: 10px; color: #bbb; padding: 6px; background: white; border-top: 1px solid #f0f0f0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">M</div>
+    <div>
+      <div class="header-title">Mattingly Action Centre</div>
+      <div class="header-sub">AI-Powered Management Recommendations · Hackathon 2026</div>
+    </div>
+  </div>
+  <div class="live-badge">● AI Live</div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><span class="stat-label">Total Revenue</span><span class="stat-value">$7.22M</span></div>
+  <div class="stat"><span class="stat-label">Net Profit</span><span class="stat-value green">$4.65M</span></div>
+  <div class="stat"><span class="stat-label">Net Margin</span><span class="stat-value green">64.39%</span></div>
+  <div class="stat"><span class="stat-label">At Risk</span><span class="stat-value red">$417,935</span></div>
+  <div class="stat"><span class="stat-label">Cost Leakage</span><span class="stat-value red">$1.34M</span></div>
+  <div class="stat"><span class="stat-label">Critical Customers</span><span class="stat-value red">3</span></div>
+  <div class="stat"><span class="stat-label">Exceptions</span><span class="stat-value red">37,496</span></div>
+</div>
+
+<div class="content">
+  <div class="left-panel">
+    <div class="panel-title">📊 Summary</div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">High priority</div><div class="kpi-value red">3</div></div>
+      <div class="kpi-card"><div class="kpi-label">Medium</div><div class="kpi-value amber">1</div></div>
+      <div class="kpi-card"><div class="kpi-label">Recovery</div><div class="kpi-value">$418K</div></div>
+      <div class="kpi-card"><div class="kpi-label">Opportunity</div><div class="kpi-value">1</div></div>
+    </div>
+
+    <div class="panel-title">⚡ Generate AI Plan</div>
+    <div class="btn-group">
+      <button class="btn primary" onclick="generatePlan('full')">📋 Full Action Plan</button>
+      <button class="btn danger" onclick="generatePlan('leakage')">⚠️ Leakage Recovery</button>
+      <button class="btn danger" onclick="generatePlan('critical')">🔴 Critical Customers</button>
+      <button class="btn secondary" onclick="generatePlan('operations')">⚙️ Operational Efficiency</button>
+      <button class="btn secondary" onclick="generatePlan('growth')">⭐ Growth Opportunities</button>
+      <button class="btn secondary" onclick="generatePlan('quickwins')">🏃 Top 5 Quick Wins</button>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="table-section">
+      <div class="section-header">📋 Priority Actions — Derived from Warehouse Data</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:14%">Customer</th>
+            <th style="width:28%">Issue</th>
+            <th style="width:22%">Recommended Action</th>
+            <th style="width:10%">Priority</th>
+            <th style="width:12%">At Risk</th>
+            <th style="width:14%">Timeline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Bravo FMCG</strong></td>
+            <td>17.28% margin. 422K activities — Scale Without Return archetype</td>
+            <td>Renegotiate pricing agreement</td>
+            <td><span class="badge high">High</span></td>
+            <td><strong>$169,240</strong></td>
+            <td>Q2 2026</td>
+          </tr>
+          <tr>
+            <td><strong>Charlie Medical</strong></td>
+            <td>28.37% margin + 35,991 unrecovered exceptions — Revenue Leakage archetype</td>
+            <td>Urgent billing audit</td>
+            <td><span class="badge high">High</span></td>
+            <td><strong>$94,659</strong></td>
+            <td>Urgent Q2 2026</td>
+          </tr>
+          <tr>
+            <td><strong>Delta Manufacturing</strong></td>
+            <td>27.84% margin + 1,505 exceptions — Operational Complexity archetype</td>
+            <td>Cost review + exception resolution</td>
+            <td><span class="badge high">High</span></td>
+            <td><strong>$154,036</strong></td>
+            <td>Q2–Q3 2026</td>
+          </tr>
+          <tr>
+            <td><strong>Daily Choice Foods</strong></td>
+            <td>51 avg days in stock — highest inventory holding in portfolio</td>
+            <td>Inventory optimisation review</td>
+            <td><span class="badge medium">Medium</span></td>
+            <td>TBD</td>
+            <td>Q2–Q3 2026</td>
+          </tr>
+          <tr>
+            <td><strong>Echo Imports</strong></td>
+            <td>84.57% margin — Stable Performer, best in portfolio</td>
+            <td>Grow relationship + upsell services</td>
+            <td><span class="badge opportunity">Opportunity</span></td>
+            <td>$0 (growth)</td>
+            <td>Ongoing</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ai-section">
+      <div class="ai-header">🤖 AI Management Briefing — Click a button to generate</div>
+      <div class="ai-body">
+        <div class="ai-placeholder" id="aiPlaceholder">Select an action plan from the left panel to generate an AI-written management briefing based on your warehouse data.</div>
+        <div class="ai-content" id="aiContent" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div class="findings">
+      <div class="findings-title">🔍 Key Findings from Data</div>
+      <div class="finding">Only 3 of 30 customers carry all $417,935 of at-risk revenue — concentrated risk requiring immediate management intervention.</div>
+      <div class="finding">96% of all exceptions (35,991 of 37,496) are unrecovered activities from Charlie Medical only — systematic billing failure, not operational.</div>
+      <div class="finding">Bravo FMCG drives highest activity volume (422K units) returning only 17.28% margin — classic Scale Without Return pattern requiring contract renegotiation.</div>
+      <div class="finding">Rework + Returns labour = 9,241 hours of non-value-adding activity — operational efficiency opportunity worth ~$200K annually.</div>
+      <div class="finding">Echo Imports at 84.57% margin is the portfolio star. Growth investment should run parallel to risk remediation.</div>
+    </div>
+  </div>
+</div>
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+<!-- EMAIL MODAL -->
+<div id="emailModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:white;border-radius:12px;padding:24px;width:580px;max-width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <h3 style="font-size:14px;font-weight:600;color:#1a2a3a;">📧 Management Alert Email</h3>
+      <button onclick="closeEmail()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#888;">✕</button>
+    </div>
+    <div style="background:#f9f9f9;border:1px solid #e0e0e0;border-radius:8px;padding:16px;font-size:12px;line-height:1.8;color:#333;margin-bottom:16px;">
+      <div style="margin-bottom:6px;"><strong>To:</strong> nikhil6131@gmail.com</div>
+      <div style="margin-bottom:6px;"><strong>Subject:</strong> ⚠️ Action Required — Mattingly Warehouse Alert</div>
+      <div style="margin-bottom:6px;"><strong>Priority:</strong> High</div>
+      <hr style="border:none;border-top:1px solid #e0e0e0;margin:10px 0;"/>
+      <p style="margin-bottom:10px;">Dear Management Team,</p>
+      <p style="margin-bottom:10px;">Our warehouse analytics dashboard has identified <strong>3 critical customers</strong> requiring immediate intervention, representing <strong>$417,935 in at-risk revenue</strong>.</p>
+      <p style="margin-bottom:6px;font-weight:600;">Priority Actions Required:</p>
+      <p style="margin-bottom:5px;">🔴 <strong>Bravo FMCG</strong> — Renegotiate pricing | Margin 17.28% | At Risk $169,240</p>
+      <p style="margin-bottom:5px;">🔴 <strong>Charlie Medical</strong> — Billing audit | 35,991 exceptions | At Risk $94,659</p>
+      <p style="margin-bottom:10px;">🔴 <strong>Delta Manufacturing</strong> — Cost review | Margin 27.84% | At Risk $154,036</p>
+      <p style="margin-bottom:10px;">Please review the Action Centre dashboard for full AI-generated recommendations.</p>
+      <p>Regards,<br/>Mattingly Warehouse Analytics System</p>
+    </div>
+    <div id="emailStatus" style="display:none;padding:10px;border-radius:8px;margin-bottom:12px;font-size:13px;text-align:center;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="sendRealEmail()" id="sendBtn" style="flex:1;background:#4A5E23;color:white;border:none;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">📧 Send Alert Now</button>
+      <button onclick="closeEmail()" style="flex:1;background:#f0f4e8;color:#4A5E23;border:1px solid #d0ddb8;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Close</button>
+    </div>
+  </div>
+</div>
+
+<div style="background:white;border-top:1px solid #e0e0e0;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;">
+  <button onclick="openEmail()" style="background:#c0392b;color:white;border:none;padding:8px 20px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">📧 Send Management Alert</button>
+  <div class="footer" style="border:none;padding:0;">Powered by Groq AI (llama-3.3-70b-versatile) · Mattingly Hackathon 2026</div>
+</div>
+
+<script>
+emailjs.init('JEaKOV-c8YizuboA1');
+
+function openEmail() {
+  document.getElementById('emailModal').style.display = 'flex';
+  document.getElementById('emailStatus').style.display = 'none';
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('sendBtn').textContent = '📧 Send Alert Now';
+}
+
+function closeEmail() {
+  document.getElementById('emailModal').style.display = 'none';
+}
+
+async function sendRealEmail() {
+  const btn = document.getElementById('sendBtn');
+  const status = document.getElementById('emailStatus');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  const message = `Dear Management Team,
+
+Our warehouse analytics dashboard has identified 3 critical customers requiring immediate intervention, representing $417,935 in at-risk revenue.
+
+PRIORITY ACTIONS REQUIRED:
+
+🔴 Bravo FMCG — Renegotiate pricing
+   Margin: 17.28% | At Risk: $169,240 | Timeline: Q2 2026
+
+🔴 Charlie Medical — Urgent billing audit
+   Margin: 28.37% | 35,991 unrecovered exceptions | At Risk: $94,659 | Timeline: Urgent Q2 2026
+
+🔴 Delta Manufacturing — Cost review
+   Margin: 27.84% | At Risk: $154,036 | Timeline: Q2-Q3 2026
+
+⭐ Echo Imports — Growth opportunity
+   Margin: 84.57% | Action: Grow relationship
+
+Total at-risk revenue: $417,935
+Total recovery potential: $418K
+
+Please review the full Action Centre dashboard for AI-generated recommendations.
+
+Regards,
+Mattingly Warehouse Analytics System`;
+
+  try {
+    await emailjs.send('service_dop1p57', 'template_6ajfwo4', {
+      to_email: 'nikhil6131@gmail.com',
+      from_name: 'Mattingly Analytics',
+      name: 'Mattingly Analytics System',
+      message: message
+    });
+    status.style.display = 'block';
+    status.style.background = '#e8f5e9';
+    status.style.color = '#2e7d32';
+    status.style.border = '1px solid #a5d6a7';
+    status.textContent = '✅ Alert email sent successfully to management team!';
+    btn.textContent = '✅ Sent!';
+  } catch(e) {
+    status.style.display = 'block';
+    status.style.background = '#fdecea';
+    status.style.color = '#c62828';
+    status.style.border = '1px solid #ef9a9a';
+    status.textContent = '❌ Failed to send: ' + e.text;
+    btn.disabled = false;
+    btn.textContent = '📧 Retry';
+  }
+}
+</script>
+
+<script>
+const GROQ_KEY = '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';
+const MODEL = 'llama-3.3-70b-versatile';
+
+const DATA = `MATTINGLY WAREHOUSE DATA:
+Total Revenue: $7,216,893 | Net Profit: $4,646,881 | Net Margin: 64.39%
+At Risk: $417,935 | Cost Leakage: $1.34M | Orders: 3,055,341
+CRITICAL: Bravo FMCG Rev $371,652 Margin 17.28% AtRisk $169,240 422K activities 0 exceptions Archetype:Scale Without Return
+CRITICAL: Charlie Medical Rev $208,762 Margin 28.37% AtRisk $94,659 35991 unrecovered exceptions Archetype:Revenue Leakage
+CRITICAL: Delta Manufacturing Rev $303,506 Margin 27.84% AtRisk $154,036 1505 exceptions Archetype:Operational Complexity
+STARS: Echo Imports Rev $891,718 Margin 84.57% | Alpha Retail Rev $452,824 Margin 79.27%
+LABOUR: Dispatch 14068hrs Pick 12157hrs Rework 4635hrs Returns 4606hrs UrgentOrders 2175hrs
+INVENTORY: Daily Choice Foods 51days HealthFirst 52days Pacific Healthcare 52days
+EXCEPTIONS: Unrecovered 35991 Returns 729 Rework 411 UrgentOrders 365`;
+
+const PROMPTS = {
+  full: DATA + `\n\nGenerate FULL EXECUTIVE ACTION PLAN:\n1. Executive Summary (3 sentences)\n2. Top 5 Priority Actions (customer|action|owner|timeline|$impact)\n3. Operational Quick Wins (2 actions)\n4. Growth Strategy\n5. 30-60-90 Day Roadmap\nUse dollar figures. Executive tone.`,
+  leakage: DATA + `\n\nGenerate REVENUE LEAKAGE RECOVERY PLAN:\n1. Root cause of $417,935 at-risk\n2. Charlie Medical billing audit plan (35,991 exceptions)\n3. Bravo FMCG contract renegotiation\n4. Delta Manufacturing exception resolution\n5. Recovery timeline and amounts`,
+  critical: DATA + `\n\nGenerate CRITICAL CUSTOMER PLAN for Bravo FMCG, Charlie Medical, Delta Manufacturing.\nFor each: situation|root cause|3 actions|owner|timeline|financial impact`,
+  operations: DATA + `\n\nGenerate OPERATIONAL EFFICIENCY PLAN:\n1. Labour optimisation (Rework 4635hrs + Returns 4606hrs)\n2. Inventory reduction (51-52 days)\n3. Urgent orders reduction\n4. Exception management\n5. Cost reduction opportunities\nInclude specific targets and savings.`,
+  growth: DATA + `\n\nGenerate GROWTH OPPORTUNITY PLAN:\n1. Echo Imports expansion (84.57% margin)\n2. Alpha Retail upsell (79.27%)\n3. Margin expansion customers\n4. Contract optimisation\n5. New customer strategy\nFocus on revenue growth.`,
+  quickwins: DATA + `\n\nGenerate TOP 5 QUICK WINS for next 30 days.\nFor each: Action|Why now|Owner|$Impact|Effort(Low/Med/High)\nHighest impact lowest effort first.`
+};
+
+const LABELS = {
+  full: '📋 Full Action Plan',
+  leakage: '⚠️ Leakage Recovery Plan',
+  critical: '🔴 Critical Customer Plan',
+  operations: '⚙️ Operational Efficiency Plan',
+  growth: '⭐ Growth Opportunities Plan',
+  quickwins: '🏃 Top 5 Quick Wins'
+};
+
+async function generatePlan(type) {
+  const placeholder = document.getElementById('aiPlaceholder');
+  const content = document.getElementById('aiContent');
+  const buttons = document.querySelectorAll('.btn');
+  buttons.forEach(b => b.disabled = true);
+  placeholder.style.display = 'none';
+  content.style.display = 'block';
+  content.innerHTML = '<div class="loading"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>AI analysing warehouse data...</span></div>';
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [
+          { role: 'system', content: 'You are a senior warehouse operations consultant. Generate specific data-driven executive action plans. Always cite dollar figures. Be direct and actionable.' },
+          { role: 'user', content: PROMPTS[type] }
+        ],
+        temperature: 0.7,
+        max_tokens: 1000
+      })
+    });
+    const data = await res.json();
+    const reply = data.choices?.[0]?.message?.content || 'No response received.';
+    content.innerHTML = `<strong style="color:#4A5E23;">${LABELS[type]} — Generated from Warehouse Data</strong>\n\n${reply}`;
+  } catch(e) {
+    content.innerHTML = `<span style="color:#c0392b;">Error: ${e.message}</span>`;
+  }
+  buttons.forEach(b => b.disabled = false);
+}
+</script>
+</body>
+</html>
