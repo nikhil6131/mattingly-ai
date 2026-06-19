@@ -1,4 +1,4 @@
-# Project Write-Up — Mattingly Warehouse Analytics & AI Decision Support System
+# Project Write-Up - Mattingly Warehouse Analytics & AI Decision Support System
 
 **Mattingly Inaugural AI & Operations Hackathon 2026**
 **Result: Top 10 Finalist (of 20 participants, Victoria-wide)**
